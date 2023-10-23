@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Secure File Upload System</title>
+</head>
+<body onload="verifyuser()">
+    <center>
+    <h1>Secure File Upload System</h1>
+<div id="login">
+    <!-- Login Form -->
+    <h2>Login</h2>
+    <form>
+        <label for="username">Username:</label>
+        <input type="text" name="username" id="username" required>
+        <br><br>
+        <label for="password">Password:</label>
+        <input type="password" name="password" id="password" required>
+        <br><br>
+        <label id="error"></label><br><br>
+        <button onclick="login()">Login</button>
+        <button onclick="active('signup','login')">Signup</button>
+    </form>
+</div>
+<div id="signup" style="display: none;">
+    <!-- Signup Form -->
+    <h2>Signup</h2>
+    <form>
+        <label for="newUsername">Username:</label>
+        <input type="text" name="newUsername" id="newUsername" required>
+        <br><br>
+        <label for="newPassword">Password:</label>
+        <input type="password" name="newPassword" id="newPassword" required>
+        <label id="error_signup"></label><br><br>
+        <button onclick="signup()">Signup</button>
+        <button onclick="active('login','signup')">login</button>
+    </form>
+</div>
+    </center>
+</body>
+</html>
+<script>
+function login(val)
+{           
+    let username = document.getElementById('username').value;
+    let password = document.getElementById('password').value;
+    if(username.length > 0 && password.length > 0){
+        
+            var data = JSON.stringify({
+            "method": "login",
+            "username":username,
+            "password": password
+            });
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://localhost/machinetest/index.php", true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    console.log(response);
+                    if(response.status==200){
+                        window.location.href = "http://localhost//machinetest/fileupload.html";
+                    }                    
+                    else{
+                        document.getElementById("error").innerHTML =response.message;
+                        document.getElementById("error").style.color = "red";
+                }
+                }
+            };
+            xhr.send(data);
+    }
+    else{
+        document.getElementById("error").innerHTML ="please enter the username and password";
+        document.getElementById("error").style.color = "red";
+    }
+    event.preventDefault();
+}
+function signup(){
+    let username = document.getElementById('newUsername').value;
+    let password = document.getElementById('newPassword').value;
+    if(username.length > 0 && password.length > 0){
+        
+            var data = JSON.stringify({
+            "method": "signup",
+            "username":username,
+            "password": password
+            });
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://localhost/machinetest/index.php", true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    console.log(response);
+                    if(response.status==200){
+                        window.location.href = "http://localhost//machinetest/fileupload.html";
+                    }                    
+                    else{
+                        document.getElementById("error_signup").innerHTML =response.message;
+                        document.getElementById("error_signup").style.color = "red";
+                }
+                }
+            };
+            xhr.send(data);
+    }
+    else{
+        document.getElementById("error").innerHTML ="please enter the username and password";
+        document.getElementById("error").style.color = "red";
+    }
+    event.preventDefault();
+}
+function verifyuser(){
+    var data = JSON.stringify({
+            "method": "verifyUserLogin"});
+    var xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://localhost/machinetest/index.php", true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    if(response.status==200){
+                        window.location.href = "http://localhost//machinetest/fileupload.html";
+                    }
+                }
+            };
+            xhr.send(data);
+}
+function active(active,inactive){
+            document.getElementById(active).style.display = "block";
+            document.getElementById(inactive).style.display = "none";
+            event.preventDefault();
+}
+</script>

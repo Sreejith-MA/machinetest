@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Upload Example</title>
+</head>
+<body onload="verifyuser()">
+    <h1>File Upload</h1>
+    <form id="fileUploadForm" enctype="multipart/form-data">
+        <input type="file" id="fileInput" name="fileInput" accept=".jpg, .png, .pdf, .docx">
+        <button type="button" id="uploadButton">Upload</button>
+    </form>
+    <br>
+    <div id="uploadStatus"></div>
+    <br><br><br>
+<div id = "table">
+  </div>
+    <script>
+        document.getElementById("uploadButton").addEventListener("click", function() {
+            var fileInput = document.getElementById("fileInput");
+            var uploadStatus = document.getElementById("uploadStatus");
+            var file = fileInput.files[0];
+            if (!file) {
+                uploadStatus.innerHTML = "Please select a file.";
+                return;
+            }
+            var formData = new FormData();
+            formData.append("fileInput", file);
+            console.log(formData);
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "http://localhost/machinetest/index.php", true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    if(response.status==200){
+                        uploadStatus.innerHTML = response.message;
+                        uploadStatus.style.color = "green";
+                        setTimeout(function(){fetchuserdata();
+                        uploadStatus.style.display = "none";
+                    },2000);
+                        
+                    }
+                    else{
+                        uploadStatus.innerHTML = response.message;
+                        uploadStatus.style.color = "red";
+                    }
+                }
+            };
+            xhr.send(formData);
+        });
+        function verifyuser(){
+            var data = JSON.stringify({
+                    "method": "verifyUserLogin"});
+            var xhr = new XMLHttpRequest();
+                    xhr.open("POST", "http://localhost/machinetest/index.php", true);
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState === 4 && xhr.status === 200) {
+                            var response = JSON.parse(xhr.responseText);
+                            if(response.status==201){
+                                window.location.href = "http://localhost//machinetest/index.html";
+                            }else{
+                                fetchuserdata();
+                            }
+                        }
+                    };
+            xhr.send(data);
+}
+function fetchuserdata(){
+    let responses = "";
+    var data = JSON.stringify({
+                    "method": "getUserFileUploadList"});
+            var xhr = new XMLHttpRequest();
+                    xhr.open("POST", "http://localhost/machinetest/index.php", true);
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState === 4 && xhr.status === 200) {
+                            var response = JSON.parse(xhr.responseText);
+                           console.log(response);
+                           responses = "<table><tr><th>filename</th><th>uploaded_on</th><th>link</th></tr>";
+                            for (let index = 0; index < response.length; index++) {
+                                responses = responses+"<tr><td>"+response[index].file_name+"</td><td>"+response[index].created_at+"</td><td><a target='plain' href='http://localhost/machinetest/upload/"+response[index].file_name+"'>link</a></td></tr>";
+                            }
+                           responses = responses +"</table>";
+                           document.getElementById("table").innerHTML = responses;
+                        }
+                    };
+            xhr.send(data);
+}
+    </script>
+    <style>
+        table {
+          font-family: arial, sans-serif;
+          border-collapse: collapse;
+          width: 100%;
+        }
+        
+        td, th {
+          border: 1px solid #dddddd;
+          text-align: left;
+          padding: 8px;
+        }
+        
+        tr:nth-child(even) {
+          background-color: #dddddd;
+        }
+        </style>
+</body>
+</html>
