@@ -50,10 +50,11 @@ class WebApp {
     }
 
     public function signUp($data){
-        $password = $data['password'];
-        $data['password']=password_hash($data['password'], PASSWORD_DEFAULT);
-        $sql = "INSERT INTO users (`username`, `password`,`created_at`) VALUES ('{$data['username']}','{$data['password']}','{$this->date}')";
-        $results = $this->db->query($sql);
+        $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
+        $stmt = $this->db->prepare("INSERT INTO users (`username`, `password`, `created_at`) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $data['username'], $hashedPassword, $this->date);
+        $results = $stmt->execute();
+        $stmt->close();
         if($results){
             $result['status']=200;
             $result['message']="SignUp successful!";
@@ -66,8 +67,10 @@ class WebApp {
     }
 
     public function login($data){
-        $sql = "SELECT id,password FROM users WHERE username = '".$data['username']."'";
-        $results = $this->db->query($sql);
+        $stmt = $this->db->prepare("SELECT id,password FROM users WHERE username = ?");
+        $stmt->bind_param("s", $data['username']);
+        $stmt->execute();
+        $results = $stmt->get_result();
         if ($results->num_rows === 1) {
             $row = $results->fetch_assoc();
             $hashedPassword = $row["password"];
@@ -76,13 +79,13 @@ class WebApp {
                 $result['status']=200;
                 $result['message']="Login successful!";
                 $this->sendResponse($result);
-            } 
+            }
             else{
                 $result['status']=204;
                 $result['message']="Incorrect password.";
                 $this->sendResponse($result);
             }
-        } 
+        }
     else {
         $result['status']=205;
         $result['message']="User not found.";
